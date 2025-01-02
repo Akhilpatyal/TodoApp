@@ -51,6 +51,11 @@
   function removeTodo(id:string): void {
     todo = todo.filter((todo) => todo.id !== id);
   }
+  // find id of todo and edit it from array
+  function EditTodo(id:string,newTodo:string): void {
+    let currentTodo = todo.findIndex((todos) => todos.id === id); 
+    todo[currentTodo].text = newTodo;
+  }
 </script>
 
 <main>
@@ -64,7 +69,7 @@
         style="display: flex; flex-direction: column; justify-content: space-between;"
       >
         {#each todo as todos (todos.id)}
-        <Todos {todos} {completeTodo} {removeTodo}/>
+        <Todos {todos} {completeTodo} {removeTodo} {EditTodo}/>
         {/each}
       </ul>
 
@@ -98,7 +103,7 @@
     --todos-text: hsl(220 20% 14%);
 
     width: var(--width);
-    color: white;
+    color: black;
     background-color: var(--todos-bg);
     border-radius: var(--radius-base);
     border: 1px solid var(--color-gray-90);

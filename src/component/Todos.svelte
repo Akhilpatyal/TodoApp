@@ -1,35 +1,84 @@
 <script lang="ts">
-    import type { ITodo } from "$root/types/Todo.ts";
-    type CompleteTodoType = (id: string) => void
-    type RemoveTodoType = (id: string) => void
-    export let todos: ITodo
-    export let completeTodo: CompleteTodoType
-    export let removeTodo: RemoveTodoType
+  import type { ITodo } from "$root/types/Todo.ts";
+  // import { todo } from "node:test";
+  type CompleteTodoType = (id: string) => void;
+  type RemoveTodoType = (id: string) => void;
+  type EditTodoType = (id: string, newTodo: string) => void;
+  export let todos: ITodo;
+  export let completeTodo: CompleteTodoType;
+  export let removeTodo: RemoveTodoType;
+  export let EditTodo: EditTodoType;
+
+  // initially editing is false
+  let editing = false;
+  function toggleEdit() {
+    editing = true;
+  }
+  // function to handle edit
+  function handleEdit(event: KeyboardEvent, id: string): void {
+    let pressedKey = event.key;
+    let targetElement = event.target as HTMLInputElement;
+    let newTodo = targetElement.value;
+
+    switch (pressedKey) {
+      case "Escape":
+        targetElement.blur();
+        break;
+      case "Enter":
+        EditTodo(id, newTodo);
+        targetElement.blur();
+        break;
+    }
+  }
+  function handleBlur(event: FocusEvent, id: string): void {
+    let targetElement = event.target as HTMLInputElement;
+    let newTodo = targetElement.value;
+    EditTodo(id, newTodo);
+    targetElement.blur();
+    editing = false;
+  }
 </script>
 
-<li class="todo">
-    <div class="todo-item">
-      <div style="display: flex;">
-        <input 
-        on:change={()=>completeTodo(todos.id)}
-          checked={todos.completed}
-          type="checkbox"
-          id="todo"
-          class="toggle"
-        />
-        <label for="todo" aria-label="Check todo" class="todo-check"></label>
-      </div>
-      <span class="todo-text" style="color: black;">{todos.text}</span>
-      <button aria-label="Remove todo" class="remove" on:click={()=>{
-        removeTodo(todos.id)
-      }}></button>
+<li class="todo" class:editing>
+  <div class="todo-item">
+    <div style="display: flex;">
+      <input
+        on:change={() => completeTodo(todos.id)}
+        checked={todos.completed}
+        type="checkbox"
+        id="todo"
+        class="toggle"
+      />
+      <label for="todo" aria-label="Check todo" class="todo-check"></label>
     </div>
-    <!-- <input type="text" class="edit" autofocus> -->
-  </li>
+    <span
+      on:dblclick={toggleEdit}
+      class:completed={todos.completed}
+      class="todo-text"
+      style="color: black;">{todos.text}</span
+    >
+    <button
+      aria-label="Remove todo"
+      class="remove"
+      on:click={() => {
+        removeTodo(todos.id);
+      }}
+    ></button>
+  </div>
+  <!-- <input type="text" class="edit" autofocus> -->
+  {#if editing}
+    <input
+      on:keydown={(event) => handleEdit(event, todos.id)}
+      on:blur={(event) => handleBlur(event, todos.id)}
+      class="edit"
+      type="text"
+      value={todos.text}
+    />
+  {/if}
+</li>
 
-
-  <style>
-     /* Todo */
+<style>
+  /* Todo */
 
   .todo {
     font-size: var(--font-24);
@@ -120,5 +169,4 @@
   .todo:hover .remove {
     display: block;
   }
-
-    </style>
+</style>
