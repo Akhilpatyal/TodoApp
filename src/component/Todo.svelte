@@ -4,6 +4,7 @@
   import Todos from "./Todos.svelte";
   import Left from "./Remaining.svelte";
   import FilterTodos from "./FilterTodo.svelte";
+  import ClearTodos from "./ClearTodos.svelte";
 
   let todo: ITodo[] = [
     { id: "1", text: "Todo 1", completed: false },
@@ -13,9 +14,11 @@
   ];
   let selectedFilter: FiltersType = "all";
 
+  // compute
   $: todoAmount = todo.length;
   $: incompleteTodos = todo.filter((todo) => !todo.completed).length;
   $: filteredTodo = filterTodo(todo, selectedFilter);
+  $: completeTodos = todo.filter((todo)=> todo.completed).length;
 
   function generateRandomId(): string {
     return Math.random().toString(16).slice(2);
@@ -46,7 +49,7 @@
     );
   }
 
-  function setFilter(newFilter: FiltersType): void {
+  function setFilter(newFilter: FiltersType):void {
     selectedFilter = newFilter;
   }
 
@@ -81,7 +84,8 @@
       <div class="actions">
         <Left {incompleteTodos} />
         <FilterTodos {selectedFilter} {setFilter} />
-        <button class="clear-completed" on:click={clearCompleted}>Clear Completed</button>
+        <ClearTodos {clearCompleted} {completeTodos}/>
+       
       </div>
     {/if}
   </section>

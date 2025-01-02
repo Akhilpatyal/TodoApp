@@ -2,8 +2,8 @@
     import type { FiltersType } from "$root/types/Todo.ts";
     type SetFilterType = (newFilter: string) => void;
     export let selectedFilter: FiltersType;
-    export let setFilter: SetFilterType;
-	let filters = ['all', 'active', 'completed']
+    export let setFilter:(newFilter: FiltersType) => void;;
+    const filters: FiltersType[] = ["all", "active", "completed"];
 </script>
 
 <div class="filters">
