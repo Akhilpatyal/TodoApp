@@ -14,6 +14,7 @@
   ];
   let selectedFilter: FiltersType = "all";
 
+
   // compute
   $: todoAmount = todo.length;
   $: incompleteTodos = todo.filter((todo) => !todo.completed).length;
