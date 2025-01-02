@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type { ITodo } from "$root/types/Todo.ts";
+  import type { FiltersType, ITodo } from "$root/types/Todo.ts";
   import AddTodo from "./AddTodo.svelte";
   import Todos from "./Todos.svelte";
   import Left from "./Remaining.svelte";
+  import FilterTodos from "./FilterTodo.svelte";
 
   let todo: ITodo[] = [
     { id: "1", text: "Todo 1", completed: false },
@@ -10,51 +11,60 @@
     { id: "3", text: "Todo 3", completed: false },
     { id: "4", text: "Todo 4", completed: false },
   ];
+  let selectedFilter: FiltersType = "all";
 
-  // $: console.log(todo);
   $: todoAmount = todo.length;
   $: incompleteTodos = todo.filter((todo) => !todo.completed).length;
-  function gernerateRandomId(): string {
+  $: filteredTodo = filterTodo(todo, selectedFilter);
+
+  function generateRandomId(): string {
     return Math.random().toString(16).slice(2);
   }
-  // add
+
   function addTodo(todoText: string): void {
-    let newTodo: ITodo = {
-      id: gernerateRandomId(),
-      text: todoText,
-      completed: false,
-    };
-    // Correct way to update the todo array in Svelte
-    // todo = [...todo, newTodo];
-    todo = [newTodo, ...todo];
+    todo = [{ id: generateRandomId(), text: todoText, completed: false }, ...todo];
   }
+
   function toggleComplete(event: MouseEvent): void {
-    let { checked } = event.target as HTMLInputElement;
-    todo = todo.map((todo) => {
-      return {
-        ...todo,
-        completed: checked,
-      };
-    });
+    const { checked } = event.target as HTMLInputElement;
+    todo = todo.map((todo) => ({ ...todo, completed: checked }));
   }
 
-  function completeTodo(id:string):void{ 
-    todo=todo.map((todo)=>{
-      if(todo.id===id){
-      
-          todo.completed=!todo.completed
-
-      }
-      return todo
-    })
+  function completeTodo(id: string): void {
+    todo = todo.map((todo) =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    );
   }
-  function removeTodo(id:string): void {
+
+  function removeTodo(id: string): void {
     todo = todo.filter((todo) => todo.id !== id);
   }
-  // find id of todo and edit it from array
-  function EditTodo(id:string,newTodo:string): void {
-    let currentTodo = todo.findIndex((todos) => todos.id === id); 
-    todo[currentTodo].text = newTodo;
+
+  function EditTodo(id: string, newTodo: string): void {
+    todo = todo.map((todos) =>
+      todos.id === id ? { ...todos, text: newTodo } : todos
+    );
+  }
+
+  function setFilter(newFilter: FiltersType): void {
+    selectedFilter = newFilter;
+  }
+
+  function filterTodo(todo: ITodo[], filter: FiltersType): ITodo[] {
+    switch (filter) {
+      case "all":
+        return todo;
+      case "active":
+        return todo.filter((todo) => !todo.completed);
+      case "completed":
+        return todo.filter((todo) => todo.completed);
+      default:
+        return todo;
+    }
+  }
+
+  function clearCompleted(): void {
+    todo = todo.filter((todo) => !todo.completed);
   }
 </script>
 
@@ -62,30 +72,21 @@
   <div class="title">Todos</div>
   <section class="todos">
     <AddTodo {addTodo} {toggleComplete} {todoAmount} />
-    <!-- todo items -->
     {#if todoAmount}
-      <ul
-        class="todo-list"
-        style="display: flex; flex-direction: column; justify-content: space-between;"
-      >
-        {#each todo as todos (todos.id)}
-        <Todos {todos} {completeTodo} {removeTodo} {EditTodo}/>
+      <ul class="todo-list">
+        {#each filteredTodo as todos (todos.id)}
+          <Todos {todos} {completeTodo} {removeTodo} {EditTodo} />
         {/each}
       </ul>
-
-      <!-- todo action -->
       <div class="actions">
-        <Left {incompleteTodos}/>
-        <div class="filters">
-          <button class="filter">All</button>
-          <button class="filter">Active</button>
-          <button class="filter">Complete</button>
-        </div>
-        <button class="clear-completed">Clear Complete</button>
+        <Left {incompleteTodos} />
+        <FilterTodos {selectedFilter} {setFilter} />
+        <button class="clear-completed" on:click={clearCompleted}>Clear Completed</button>
       </div>
     {/if}
   </section>
 </main>
+
 
 <style>
   /* Todos */
@@ -181,25 +182,4 @@
   }
 
  
-  /* Filters */
-
-  .filters {
-    display: flex;
-    gap: var(--spacing-4);
-  }
-
-  .filter {
-    text-transform: capitalize;
-    padding: var(--spacing-4) var(--spacing-8);
-    border: 1px solid transparent;
-    border-radius: var(--radius-base);
-  }
-
-  .filter:hover {
-    border: 1px solid var(--color-highlight);
-  }
-
-  .selected {
-    border-color: var(--color-highlight);
-  }
 </style>
