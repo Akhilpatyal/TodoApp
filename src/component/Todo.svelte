@@ -1,51 +1,67 @@
 <script lang="ts">
   import type { FiltersType, ITodo } from "$root/types/Todo.ts";
+  import  useStorage  from '$root/stores/useStorage'
   import AddTodo from "./AddTodo.svelte";
   import Todos from "./Todos.svelte";
   import Left from "./Remaining.svelte";
   import FilterTodos from "./FilterTodo.svelte";
   import ClearTodos from "./ClearTodos.svelte";
 
-  let todo: ITodo[] = [
-    { id: "1", text: "Todo 1", completed: false },
-    { id: "2", text: "Todo 2", completed: false },
-    { id: "3", text: "Todo 3", completed: false },
-    { id: "4", text: "Todo 4", completed: false },
-  ];
+  //let todo: ITodo[] = [
+  //  { id: "1", text: "Todo 1", completed: false },
+  //  { id: "2", text: "Todo 2", completed: false },
+  //  { id: "3", text: "Todo 3", completed: false },
+  //  { id: "4", text: "Todo 4", completed: false },
+  //]; 
+  //new add
+  //var localStorage: Storage = window.localStorage;
+  //let todo: ITodo[] = [];
+  //
+  //const storedTodo = localStorage.getItem('todo');
+  //if (storedTodo) {
+  //  todo = JSON.parse(storedTodo);
+  //}
+  //  $: {
+  //    localStorage.setItem('todos', JSON.stringify(todo))
+  //  }
+//
+  //
+  let todo = useStorage<ITodo[]>('todos', [])
+
   let selectedFilter: FiltersType = "all";
 
 
   // compute
-  $: todoAmount = todo.length;
-  $: incompleteTodos = todo.filter((todo) => !todo.completed).length;
-  $: filteredTodo = filterTodo(todo, selectedFilter);
-  $: completeTodos = todo.filter((todo)=> todo.completed).length;
+  $: todoAmount = $todo.length;
+  $: incompleteTodos = $todo.filter((todo) => !todo.completed).length;
+  $: filteredTodo = filterTodo($todo, selectedFilter);
+  $: completeTodos = $todo.filter((todo)=> todo.completed).length;
 
   function generateRandomId(): string {
     return Math.random().toString(16).slice(2);
   }
 
   function addTodo(todoText: string): void {
-    todo = [{ id: generateRandomId(), text: todoText, completed: false }, ...todo];
+    $todo = [{ id: generateRandomId(), text: todoText, completed: false }, ...$todo];
   }
 
   function toggleComplete(event: MouseEvent): void {
     const { checked } = event.target as HTMLInputElement;
-    todo = todo.map((todo) => ({ ...todo, completed: checked }));
+    $todo = $todo.map((todo) => ({ ...todo, completed: checked }));
   }
 
   function completeTodo(id: string): void {
-    todo = todo.map((todo) =>
+    $todo = $todo.map((todo) =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
   }
 
   function removeTodo(id: string): void {
-    todo = todo.filter((todo) => todo.id !== id);
+    $todo = $todo.filter((todo) => todo.id !== id);
   }
 
   function EditTodo(id: string, newTodo: string): void {
-    todo = todo.map((todos) =>
+    $todo = $todo.map((todos) =>
       todos.id === id ? { ...todos, text: newTodo } : todos
     );
   }
@@ -68,7 +84,7 @@
   }
 
   function clearCompleted(): void {
-    todo = todo.filter((todo) => !todo.completed);
+    $todo = $todo.filter((todo) => !todo.completed);
   }
 </script>
 
